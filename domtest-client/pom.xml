@@ -31,6 +31,17 @@
       <version>${domino.ui.version}</version>
       <classifier>sources</classifier>
     </dependency>
+		<dependency>
+			<groupId>org.dominokit</groupId>
+			<artifactId>domino-jackson</artifactId>
+			<version>${domino.jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.dominokit</groupId>
+			<artifactId>domino-jackson-processor</artifactId>
+			<version>${domino.jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
   </dependencies>
 
   <build>
