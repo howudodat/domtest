@@ -8,7 +8,11 @@ import org.dominokit.domino.ui.datatable.ColumnConfig;
 import org.dominokit.domino.ui.datatable.DataTable;
 import org.dominokit.domino.ui.datatable.TableConfig;
 import org.dominokit.domino.ui.datatable.events.ColumnResizedEvent;
+import org.dominokit.domino.ui.datatable.plugins.column.ColumnFilterMeta;
+import org.dominokit.domino.ui.datatable.plugins.column.ColumnHeaderFilterPlugin;
 import org.dominokit.domino.ui.datatable.plugins.column.ResizeColumnsPlugin;
+import org.dominokit.domino.ui.datatable.plugins.filter.header.TextHeaderFilter;
+import org.dominokit.domino.ui.datatable.plugins.header.HeaderBarPlugin;
 import org.dominokit.domino.ui.datatable.plugins.row.RowClickPlugin;
 import org.dominokit.domino.ui.datatable.store.LocalListDataStore;
 import org.dominokit.domino.ui.dialogs.Dialog;
@@ -81,9 +85,11 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 		}
 
 		protected DataTable<tabledata> createTable() {
+			ColumnHeaderFilterPlugin<tabledata> testColumnHeaderFilterPlugin = ColumnHeaderFilterPlugin.<tabledata>create();
 			TableConfig<tabledata> tableConfig = new TableConfig<>();
 			tableConfig.addColumn(
 				ColumnConfig.<tabledata>create("Label", "Label")
+					.applyMeta(ColumnFilterMeta.of(TextHeaderFilter.<tabledata>create()))
 					.setCellRenderer(
 						cell -> { return text(cell.getTableRow().getRecord().label); }))
 
@@ -91,6 +97,20 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 				.setFixedBodyHeight(Calc.sub(Unit.vh.of(100), Unit.px.of(115)))
 				.addPlugin(new ResizeColumnsPlugin<tabledata>().configure(config -> config.setClipContent(true)))
 				.addPlugin(new RowClickPlugin<>(row -> { GWT.log("CLICKED:"+row.getRecord().label); }))
+				.addPlugin(new HeaderBarPlugin<tabledata>("", "")
+						.addActionElement(dataTable -> Icons.filter_menu_outline()
+							.clickable()
+							.addClickListener(evt -> {
+								GWT.debugger();
+								testColumnHeaderFilterPlugin.getFiltersRowElement().toggleDisplay(); })
+							.element())
+						.addActionElement(new HeaderBarPlugin.ClearSearch<>())
+						.addActionElement(new HeaderBarPlugin.SearchTableAction<tabledata>()
+							.withSearchBox(
+								(parent, searchBox) -> {
+									searchBox.addCss(dui_max_w_64, dui_bg_dominant_l_1, dui_rounded_md);
+								}))
+			)		
 			;
 
 			DataTable<tabledata> tbl = new DataTable<>(tableConfig, ds);
