@@ -2,6 +2,7 @@ package com.howudodat;
 
 import java.util.ArrayList;
 
+import org.dominokit.domino.ui.button.Button;
 import org.dominokit.domino.ui.cards.Card;
 import org.dominokit.domino.ui.datatable.ColumnConfig;
 import org.dominokit.domino.ui.datatable.DataTable;
@@ -10,13 +11,20 @@ import org.dominokit.domino.ui.datatable.events.ColumnResizedEvent;
 import org.dominokit.domino.ui.datatable.plugins.column.ResizeColumnsPlugin;
 import org.dominokit.domino.ui.datatable.plugins.row.RowClickPlugin;
 import org.dominokit.domino.ui.datatable.store.LocalListDataStore;
+import org.dominokit.domino.ui.dialogs.Dialog;
 import org.dominokit.domino.ui.elements.BaseElement;
 import org.dominokit.domino.ui.grid.GridLayout;
 import org.dominokit.domino.ui.grid.SectionSpan;
+import org.dominokit.domino.ui.icons.MdiIcon;
+import org.dominokit.domino.ui.icons.lib.Icons;
 import org.dominokit.domino.ui.layout.AppLayout;
+import org.dominokit.domino.ui.layout.NavBar;
+import org.dominokit.domino.ui.menu.direction.DropDirection;
+import org.dominokit.domino.ui.popover.Popover;
 import org.dominokit.domino.ui.style.Calc;
 import org.dominokit.domino.ui.style.DominoCss;
 import org.dominokit.domino.ui.utils.ElementsFactory;
+import org.dominokit.domino.ui.utils.PostfixAddOn;
 import org.dominokit.domino.ui.utils.Unit;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -96,6 +104,38 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 		}
 	}
 
+	public class DlgTest extends Dialog {
+		public DlgTest() {
+			init(this);
+			this.setWidth("90%");
+			this.setHeight(Calc.sub(Unit.vh.of(100), Unit.px.of(50)));
+			initHeader();
+			this.setModal(true);
+			this.setAutoClose(false);
+		}
+
+	
+		protected void initHeader() {
+			MdiIcon icnSend = Icons.send();
+			Popover pop = Popover.create(icnSend)
+				.setCloseOnBlur(true)
+				.closeOnEscape(true)
+				.setPosition(DropDirection.BOTTOM_MIDDLE)
+				.appendChild(Card.create("Card Title")
+				.appendChild(Button.create("Test Me"))
+				.addCss(dui_bg_accent, dui_fg, dui_elevation_0, dui_m_2px, dui_rounded_sm)
+			);
+
+			NavBar nav = NavBar.create().addCss(dui_dialog_nav)
+				.setTitle("Test Dialog")
+				.appendChild(PostfixAddOn.of(icnSend))
+				.appendChild(PostfixAddOn.of((Icons.close().clickable().addClickListener(e -> close()))));
+
+
+			getHeader().appendChild(nav);
+		}
+	}
+
 	/**
 	 * This is the entry point method.
 	 */
@@ -107,5 +147,7 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 		});
 
 		body().appendChild(layout);
+
+		new DlgTest().open();
 	}
 }
