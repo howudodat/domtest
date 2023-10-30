@@ -10,8 +10,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class DBResults {
 	public boolean success;
-	public DBHome home;
-
 	public ArrayList<DBHome>homes;
 	
 	public DBResults() { }

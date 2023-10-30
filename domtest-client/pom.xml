@@ -42,6 +42,11 @@
 			<version>${domino.jackson.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+  <groupId>org.gwtproject.http</groupId>
+  <artifactId>gwt-http</artifactId>
+  <version>1.0.0-RC3</version>
+</dependency>
   </dependencies>
 
   <build>
