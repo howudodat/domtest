@@ -1,18 +1,30 @@
 package com.howudodat;
 
-import org.dominokit.domino.ui.button.Button;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dominokit.domino.ui.datatable.ColumnConfig;
+import org.dominokit.domino.ui.datatable.DataTable;
+import org.dominokit.domino.ui.datatable.TableConfig;
+import org.dominokit.domino.ui.datatable.events.RecordDroppedEvent;
+import org.dominokit.domino.ui.datatable.events.SearchEvent;
+import org.dominokit.domino.ui.datatable.model.Category;
+import org.dominokit.domino.ui.datatable.model.Filter;
+import org.dominokit.domino.ui.datatable.plugins.DragDropPlugin;
+import org.dominokit.domino.ui.datatable.plugins.header.HeaderBarPlugin;
+import org.dominokit.domino.ui.datatable.plugins.row.RowClickPlugin;
+import org.dominokit.domino.ui.datatable.store.LocalListDataStore;
+import org.dominokit.domino.ui.datatable.store.SearchFilter;
 import org.dominokit.domino.ui.elements.BaseElement;
 import org.dominokit.domino.ui.elements.DivElement;
-import org.dominokit.domino.ui.forms.suggest.MultiSelect;
-import org.dominokit.domino.ui.forms.suggest.SelectOption;
 import org.dominokit.domino.ui.layout.AppLayout;
-import org.dominokit.domino.ui.notifications.Notification;
 import org.dominokit.domino.ui.style.DominoCss;
 import org.dominokit.domino.ui.utils.ElementsFactory;
-import org.gwtproject.core.client.GWT;
 import org.gwtproject.i18n.client.DateTimeFormat;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 
 import elemental2.dom.HTMLDivElement;
 
@@ -21,43 +33,90 @@ import elemental2.dom.HTMLDivElement;
  */
 public class App implements EntryPoint, ElementsFactory, DominoCss {
 	protected AppLayout layout = AppLayout.create("Domino-ui test");
+	protected LocalListDataStore<String> ds = new LocalListDataStore<>();
+	public static DateTimeFormat sdfLongMs = DateTimeFormat.getFormat("MM/dd/yyyy HH:mm:ss.SSS");
 
 	public class PnlSelectTest extends BaseElement<HTMLDivElement, PnlSelectTest> {
 
 		public PnlSelectTest() {
 			super(ElementsFactory.elements.div().element());
+			ArrayList<String> alStrings = new ArrayList<>();
+			for (int x = 0; x < 1000; x++)
+				alStrings.add("Item " + x);
 
-			DivElement content = div().addCss(dui_flex, dui_flex_col);
+			TableConfig<String> tableConfig = new TableConfig<>();
+			tableConfig
+					.setFixed(true)
+					.addColumn(
+							ColumnConfig.<String>create("title", "title")
+									.setCellRenderer(cell -> {
+										return text("test");
+									})
+									.setWidth("100%"))
+					.addColumn(
+							ColumnConfig.<String>create("Sel", "Sel")
+									.sortable()
+									.setCellRenderer(cell -> {
+										return text("test");
+									})
+					)
+					.addPlugin(new RowClickPlugin<>(row -> {
+						row.updateRow();
+					}))
+					.addPlugin(
+							new HeaderBarPlugin<String>("", "")
+									.addActionElement(
+											new HeaderBarPlugin.SearchTableAction<String>()
+													.withSearchBox(
+															(parent, searchBox) -> {
+																searchBox.addCss(dui_max_w_64, dui_bg_dominant_l_1,
+																		dui_rounded_md);
+															})))
+				;
+												
+			tableConfig.addPlugin(new DragDropPlugin<>());
 
-			MultiSelect<String> select = MultiSelect.<String>create("Country")
-					.appendChild(SelectOption.create("USA", "USA", "America (USA)"))
-					.appendChild(SelectOption.create("ARG", "ARG", "Argentina"))
-					.appendChild(SelectOption.create("BRA", "BRA", "Brazil"))
-					.appendChild(SelectOption.create("DEN", "DEN", "Denmark"))
-					.appendChild(SelectOption.create("CRO", "CRO", "Croatia"))
-					.appendChild(SelectOption.create("IND", "IND", "India"))
-					.appendChild(SelectOption.create("SPA", "SPA", "Spain"))
-					.appendChild(SelectOption.create("FRA", "FRA", "France"))
-					.appendChild(SelectOption.create("JOR", "JOR", "Jordan"))
-					.selectAt(0)
-					.addChangeListener(
-							(oldValue, newValue) -> {
-								Notification.create("Item selected [ " + newValue + " ]")
-										.show();
-							});
+			DataTable<String> tbl = new DataTable<>(tableConfig, ds);
+			tbl.removeCss("dui-datatable-striped")
+					.setCondensed(true)
+					.headerElement().hide();
+			tbl.addSelectionListener((selectedTableRows, selectedRecords) -> {
+			});
+			tbl.addTableEventListener(RecordDroppedEvent.RECORD_DROPPED, evt -> {
+			});
 
-			content.appendChild(select);
-			// select.pauseChangeListeners();
-			select.selectByValue("BRA", true);
-			select.selectByValue("IND", true);
+			ds.setSearchFilter(new WrapperSearchFilter());
 
-			content.appendChild(Button.create("test select").addClickListener(l -> {
-				GWT.log(select.getValue().toString());
-			}));
+			DivElement content = div().addCss(dui_flex, dui_flex_col).appendChild(tbl);
 
 			this.appendChild(div()
 					.addCss(dui_flex, dui_flex_col)
 					.appendChild(content));
+
+			// timing starts here
+			GWT.log(sdfLongMs.format(new Timestamp(System.currentTimeMillis())) + " Starting dataaset load");
+			time("table");
+			timeLog("table", "Starting data load");
+			ds.setData(alStrings);
+			timeEnd("table");
+			GWT.log(sdfLongMs.format(new Timestamp(System.currentTimeMillis())) + " Finished dataaset load");
+		}
+
+		public class WrapperSearchFilter implements SearchFilter<String> {
+			@Override
+			public boolean filterRecord(SearchEvent event, String record) {
+				List<Filter> searchFilters = event.getByCategory(Category.SEARCH);
+				if (searchFilters.isEmpty()) return false;
+				
+				return searchFilters.isEmpty() || foundBySearch(record, searchFilters.get(0));
+			}
+
+			private boolean foundBySearch(String record, Filter searchFilter) {
+				String filter = searchFilter.getValues().get(0).toLowerCase();
+				if (record.toString().toLowerCase().contains(filter.toLowerCase())) return true;
+				
+				return false;
+			}
 		}
 	}
 
@@ -86,17 +145,4 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 	/*-{
 		console.timeLog(timer, log);
 	}-*/;
-
-	public static DateTimeFormat sdfLong = DateTimeFormat.getFormat("MM/dd/yyyy HH:mm:ss.SSS");
-
-	public class Date extends java.util.Date {
-
-		public Date() {
-			super();
-		}
-
-		public String toString() {
-			return sdfLong.format(this);
-		}
-	}
 }
