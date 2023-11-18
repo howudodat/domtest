@@ -31,6 +31,11 @@
       <version>${domino.ui.version}</version>
       <classifier>sources</classifier>
     </dependency>
+<dependency>
+	<groupId>com.google.elemental2</groupId>
+	<artifactId>elemental2-indexeddb</artifactId>
+	<version>1.2.1</version>
+</dependency>
   </dependencies>
 
   <build>
