@@ -1,7 +1,6 @@
 package com.howudodat;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.dominokit.domino.ui.IsElement;
 import org.dominokit.domino.ui.cards.Card;
@@ -19,7 +18,6 @@ import org.dominokit.domino.ui.datatable.store.SearchFilter;
 import org.dominokit.domino.ui.menu.direction.DropDirection;
 import org.dominokit.domino.ui.popover.Popover;
 import org.dominokit.domino.ui.utils.ElementsFactory;
-import org.dominokit.domino.ui.utils.HasSelectionListeners.SelectionListener;
 
 import com.google.gwt.core.client.GWT;
 
@@ -27,8 +25,6 @@ import elemental2.dom.HTMLElement;
 class PopPicker<T> extends Popover {
 	protected LocalListDataStore<T> ds = new LocalListDataStore<>();
 	protected DataTable<T> tbl = null;
-	protected T selectedRow = null;
-	protected SelectionListener<? super PopPicker<T>, ? super T> selectionListener = null;
 
 	public PopPicker(IsElement<? extends HTMLElement> target) {
 		super(target.element());
@@ -51,44 +47,10 @@ class PopPicker<T> extends Popover {
 		return this;
 	}
 
-	public void setSelectionListener(SelectionListener<? super PopPicker<T>, ? super T> selectionListener) {
-		this.selectionListener = selectionListener;
-	}
-
-	public void setFilter(String filter) {
-		tbl.getSearchContext().clear();
-		tbl.getSearchContext().add(Filter.create("*", filter, Category.SEARCH));
-		tbl.getSearchContext().fireSearchEvent();
-
-		tbl.pauseSelectionListeners();
-		List<T> filteredRecords = ds.getFilteredRecords();
-		if (filteredRecords.size() == 1) {
-			List<TableRow<T>> rows = tbl.getRows();
-			for (TableRow<T> row : rows) {
-				if (row.isVisible()) {
-					row.select();
-					break;
-				}
-			}
-		} else if (filteredRecords.size() > 1 && selectedRow != null) {
-			setSelectedObject(selectedRow);
-		} else if (filteredRecords.size() == 0) {
-			tbl.deselectAll();
-			selectedRow = null;
-		}
-		tbl.resumeSelectionListeners();
-	}
-
 	public void clearFilter() {
 		GWT.log("Clear Filter - ");
 		tbl.getSearchContext().clear();
 		tbl.getSearchContext().fireSearchEvent();
-		if (selectedRow != null)
-			setSelectedObject(selectedRow);
-	}
-
-	public T getSelectedObject() {
-		return selectedRow;
 	}
 
 	public void setSelectedObject(T val) {
@@ -97,7 +59,6 @@ class PopPicker<T> extends Popover {
 		for (TableRow<T> row : rows) {
 			if (row.getRecord().equals(val)) {
 				row.select();
-				selectedRow = row.getRecord();
 				break;
 			}
 		}
@@ -116,11 +77,9 @@ class PopPicker<T> extends Popover {
 									return ElementsFactory.elements.text(o.toString());
 								}))
 				.addPlugin(new RowClickPlugin<>(row -> {
-					pop.collapse();
 					GWT.log("Row Click");
 					row.select();
 					pop.collapse();
-					onClick(row.getRecord());
 				}))
 				.setMultiSelect(false)
 				.addPlugin(new SelectionPlugin<>());
@@ -131,19 +90,10 @@ class PopPicker<T> extends Popover {
 		tbl.headerElement().hide();
 		tbl.addSelectionListener((selectedTableRows, selectedRecords) -> {
 			GWT.log("Selection Listener");
-			// pop.collapse();
-			// selectedRow = selectedRecords.get(0).getRecord();
-			// onClick(selectedRow);
 		});
 
 		return tbl;
 
-	}
-
-	protected void onClick(T tdata) {
-		selectedRow = tdata;
-		if (selectionListener != null)
-			selectionListener.onSelectionChanged(Optional.of(this), tdata);
 	}
 
 	public class PickerSearchFilter implements SearchFilter<T> {
