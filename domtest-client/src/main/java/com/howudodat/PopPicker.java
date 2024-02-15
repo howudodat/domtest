@@ -50,7 +50,7 @@ class PopPicker<T> extends Popover {
 	public void clearFilter() {
 		GWT.log("Clear Filter - ");
 		tbl.getSearchContext().clear();
-		tbl.getSearchContext().fireSearchEvent();
+		// tbl.getSearchContext().fireSearchEvent();
 	}
 
 	public void setSelectedObject(T val) {
@@ -100,6 +100,7 @@ class PopPicker<T> extends Popover {
 
 		@Override
 		public boolean filterRecord(SearchEvent event, T record) {
+			GWT.debugger();
 			List<Filter> searchFilters = event.getByCategory(Category.SEARCH);
 			if (searchFilters.isEmpty())
 				return true;

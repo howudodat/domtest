@@ -1,10 +1,15 @@
 package com.howudodat;
 
-import org.dominokit.domino.ui.forms.DateBox;
+import org.dominokit.domino.ui.forms.LongBox;
+import org.dominokit.domino.ui.forms.TextBox;
+import org.dominokit.domino.ui.forms.suggest.Select;
+import org.dominokit.domino.ui.forms.suggest.SelectOption;
 import org.dominokit.domino.ui.layout.AppLayout;
+import org.dominokit.domino.ui.menu.direction.DropDirection;
 import org.dominokit.domino.ui.style.DominoCss;
 import org.dominokit.domino.ui.utils.DominoUIConfig;
 import org.dominokit.domino.ui.utils.ElementsFactory;
+import org.gwtproject.core.client.GWT;
 import org.gwtproject.i18n.client.DateTimeFormat;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -20,19 +25,40 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		String items[] = { "Alice", "Allen", "Bob", "Brian"};
+		TextBox tb1 = TextBox.create();
+		LongBox lb1 = LongBox.create();
 
-		DominoUIConfig.CONFIG.setClosePopupOnBlur(true);
-		DateBox dp = DateBox.create("Updated").addCss(dui_w_1_2p);
-		MiniPicker<String> mp1 = MiniPicker.create(items);
-		MiniPicker<String> mp2 = MiniPicker.create(items);
+		tb1.getInputElement().addEventListener("input", evt -> GWT.log("TextBox Changed"));
+		lb1.getInputElement().addEventListener("input", evt -> GWT.log("LongBox Changed"));
 
 		layout.withContent((parent1, content) -> {
-			content.appendChild(dp);
-			content.appendChild(mp1);
-			content.appendChild(mp2);
+			content.appendChild(tb1);
+			content.appendChild(lb1);
+		});
 
-			mp1.setSelectedObject("Allen");
+		body().appendChild(layout);
+	}
+
+	public void onModuleLoadXX() {
+		String items[] = { "", "Alice Long Last Name", "Allen With Last Name", "Bob Forgot My Last Name", "Brian No Last Name"};
+
+		DominoUIConfig.CONFIG.setClosePopupOnBlur(true);
+		Select<String> sel = Select.<String>create().addCss(dui_clearable);
+		Select<String> sel2 = Select.<String>create().addCss(dui_clearable);
+		sel.setWidth("150px");
+		sel2.setWidth("150px");
+
+		for (String s : items) sel.appendChild(SelectOption.<String>create(s, s, s));
+		for (String s : items) sel2.appendChild(SelectOption.<String>create(s, s, s));
+		sel.setSearchable(true);
+		sel2.setSearchable(true);
+		sel.getOptionsMenu().setFitToTargetWidth(false);
+		sel.getOptionsMenu().setDropDirection(DropDirection.BOTTOM_RIGHT);
+		sel2.getOptionsMenu().setDropDirection(DropDirection.BOTTOM_RIGHT);
+
+		layout.withContent((parent1, content) -> {
+			content.appendChild(sel);
+			content.appendChild(sel2);
 		});
 
 		body().appendChild(layout);
