@@ -48,6 +48,7 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 
 		layout.withNavBar((parent1, header) ->{
 			header.appendChild(PostfixAddOn.of(Button.create("rebuild").addClickListener(l->onRebuild())));
+			header.appendChild(PostfixAddOn.of(Button.create("single").addClickListener(l->onTimer())));
 			header.appendChild(PostfixAddOn.of(Button.create("timer").addClickListener(l-> {
 				Scheduler.get().scheduleFixedDelay(new RepeatingCommand() {
 					@Override
@@ -143,7 +144,7 @@ public class App implements EntryPoint, ElementsFactory, DominoCss {
 	}
 
 	protected void createInitialData() {
- 		for (int x=0;x<2000;x++) {
+ 		for (int x=0;x<20;x++) {
 			JClient c = new JClient();
 			c.LastName = "Last Name " + x;
 			c.First1 = "First " + x;
